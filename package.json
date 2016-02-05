@@ -1,0 +1,32 @@
+{
+  "name": "live-hls-fetcher",
+  "version": "1.0.1",
+  "description": "Fetch HLS segments from an m3u8 playlist",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "live-hls-fetcher": "./bin/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imbcmdth/hls-fetcher.git"
+  },
+  "contributors": [
+    "Jon-Carlos Rivera <jon.carlos.rivera@gmail.com> (http://jon-carlos.com/)",
+    "Brandon Casey <brandonocasey@gmail.com> (https://github.com/brandonocasey)"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/imbcmdth/hls-fetcher/issues"
+  },
+  "homepage": "https://github.com/imbcmdth/hls-fetcher#readme",
+  "dependencies": {
+    "async": "^1.5.0",
+    "fetch": "^0.3.6",
+    "mkdirp": "^0.5.1",
+    "pessimist": "^0.3.5",
+    "pkcs7": "^0.2.3"
+  }
+}
