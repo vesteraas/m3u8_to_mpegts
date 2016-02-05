@@ -1,15 +1,16 @@
-var path = require('path');
+// Node modules
 var URL = require('url');
-var IV;
-var keyURI;
-var begunEncryption = false;
-var duplicateFileCount = 0;
-
 var fs = require('fs');
 var path = require('path');
 var mkdirp = require('mkdirp');
 var fetch = require('fetch');
 var Decrypter = require('./decrypter.js');
+
+// Constants
+var IV;
+var keyURI;
+var begunEncryption = false;
+var duplicateFileCount = 0;
 
 function parseMasterPlaylist (manifestUri, manifestData) {
   var manifestLines = [],
@@ -22,14 +23,13 @@ function parseMasterPlaylist (manifestUri, manifestData) {
 
   // Split into lines
   lines = manifestData.split('\n');
-
   for (i = 0; i < lines.length; i++) {
     currentLine = lines[i];
     manifestLines.push(currentLine);
     if (currentLine.match(/^#EXT-X-STREAM-INF/i)) {
       i++;
       manifestLines.push(lines[i]);
-      //we found a media playlist
+      // we found a media playlist
       mediaPlaylist = {
         targetDuration:0,
         uri:lines[i],
@@ -51,7 +51,6 @@ function parseMasterPlaylist (manifestUri, manifestData) {
   };
 }
 
-
 function parseEncryption(tagLine, manifestUri) {
   if (tagLine.match(/^#EXT-X-KEY/i) && tagLine.match(/AES/)) {
     begunEncryption = true;
@@ -61,7 +60,6 @@ function parseEncryption(tagLine, manifestUri) {
     IV = IV.substring(3, IV.length - 1);
   }
 }
-
 
 function parseMediaPlaylist(playlist, done, rootUri) {
   var manifestLines = [],
@@ -143,7 +141,7 @@ function download(rootUri, cwd) {
                 filename = filename.match(/^.+\..+\?/)[0];
                 filename = filename.substring(0, filename.length - 1);
               }
-              if(fs.existsSync(path.resolve(cwd, filename))) {
+              if (fs.existsSync(path.resolve(cwd, filename))) {
                 filename = filename.split('.')[0] + duplicateFileCount + '.' + filename.split('.')[1];
                 duplicateFileCount += 1;
               }
@@ -159,11 +157,12 @@ function download(rootUri, cwd) {
   }
 }
 
-
 function streamToDisk (resource, filename, cwd) {
   // Fetch it to CWD (streaming)
 
-  var segmentStream = new fetch.FetchStream(resource.line);
+  var segmentStream = new fetch.FetchStream(resource.line),
+    outputStream;
+
   //handle duplicate filenames & remove query parameters
   if (filename.match(/\?/)) {
     filename = filename.match(/^.+\..+\?/)[0];
@@ -179,7 +178,7 @@ function streamToDisk (resource, filename, cwd) {
     duplicateFileCount += 1;
   }
 
-  var outputStream = fs.createWriteStream(path.resolve(cwd, filename));
+  outputStream = fs.createWriteStream(path.resolve(cwd, filename));
 
   segmentStream.pipe(outputStream);
 
@@ -199,6 +198,7 @@ function update(rootUri) {
   var passedRecent = false,
     lastSegmentUri = this.segments[this.segments.length - 1].uri,
     playlist = this;
+
   fetch.fetchUrl(playlist.uri, function (err, meta, body) {
     var newPlaylistLines = body.toString().split('\n'),
       i,
@@ -218,7 +218,7 @@ function update(rootUri) {
           //if we have already passed the difference in the manifest, start adding
           if (passedRecent) {
             playlist.segments.push(resource);
-          } else if(resource.uri === playlist.mostRecentUri) {
+          } else if (resource.uri === playlist.mostRecentUri) {
             passedRecent = true;
           }
         }
@@ -227,9 +227,7 @@ function update(rootUri) {
   });
 }
 
-
 function parseResource(tagLine, resourceLine, manifestUri) {
-
   var resource = {
     type: 'segment',
     line: resourceLine,
@@ -238,7 +236,6 @@ function parseResource(tagLine, resourceLine, manifestUri) {
     IV: 0,
     downloaded: false
   };
-
 
   if (begunEncryption) {
     resource.encrypted = true;
@@ -249,12 +246,10 @@ function parseResource(tagLine, resourceLine, manifestUri) {
       resource.keyURI = manifestUri + '/' + resource.keyURI;
     }
   }
-
   if (resource.IV) {
     if (resource.IV.substring(0,2) === '0x') {
       resource.IV = resource.IV.substring(2);
     }
-
     resource.IV = resource.IV.match(/.{8}/g);
     resource.IV[0] = parseInt(resource.IV[0], 16);
     resource.IV[1] = parseInt(resource.IV[1], 16);
@@ -264,10 +259,6 @@ function parseResource(tagLine, resourceLine, manifestUri) {
   }
   return resource;
 }
-
-
-
-
 
 module.exports = {
   parseMediaPlaylist:parseMediaPlaylist,
