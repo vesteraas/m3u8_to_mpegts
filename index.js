@@ -3,12 +3,47 @@ var fetch = require('fetch');
 var parse = require('./parse.js');
 var Decrypter = require('./decrypter.js');
 var async = require('async');
+var fs = require('fs');
+var mkdirp = require('mkdirp');
+
+
+function createManifestText (manifest, rootUri) {
+  return manifest.join('\n');
+}
+
+function getCWDName (parentUri, localUri) {
+  // Do I need to use node's URL object?
+  console.log("hello");
+  parentUri = parentUri.split('?')[0];
+  localUri = localUri.split('?')[0];
+  console.log("parent uri: ", parentUri);
+  console.log("local uri: ", localUri);
+  var parentPaths = path.dirname(parentUri).split('/');
+  var localPaths = path.dirname(localUri).split('/');
+
+  var lookFor = parentPaths.pop();
+  var i = localPaths.length;
+
+  while (i--) {
+    if (localPaths[i] === lookFor) {
+      break;
+    }
+  }
+
+  // No unique path-part found, use filename
+  if (i === localPaths.length - 1) {
+    return path.basename(localUri, path.extname(localUri));
+  }
+
+  return localPaths.slice(i + 1).join('_');
+}
+
 
 function getIt(options, done) {
   var uri = options.uri,
     cwd = options.cwd,
     concurrency = options.concurrency || DEFAULT_CONCURRENCY,
-    playlistFilename = path.basename(uri);
+    playlistFilename = path.basename(uri.split('?')[0]);
 
   //start of the program, fetch master playlist
   fetch.fetchUrl(uri, function getPlaylist(err, meta, body) {
@@ -22,7 +57,10 @@ function getIt(options, done) {
       oldLength = mediaPlaylists.length,
       masterManifestLines = masterPlaylist.manLines,
       i;
+    playlistFilename = playlistFilename.split('?')[0];
 
+    //save master playlist
+    fs.writeFileSync(path.resolve(cwd, playlistFilename), createManifestText(masterPlaylist.manLines, uri));
     // parse the mediaplaylists for segments and targetDuration
     for (i = 0; i < mediaPlaylists.length; i++) {
       parse.parseMediaPlaylist(masterPlaylist.medPlaylists[i], doneParsing, path.dirname(masterPlaylist.uri));
@@ -44,19 +82,14 @@ function getIt(options, done) {
         newerFunction,
         i;
 
-      // set update intervals
+      // set update and download intervals
       for (i = 0; i < pl.length; i++) {
         rootUri = path.dirname(pl[i].uri);
-        newFunction = pl[i].update.bind(pl[i]);
-        setInterval(newFunction, pl[i].targetDuration * 1000, rootUri);
-      }
-
-      // set download invertals
-      for (i = 0; i < pl.length; i++) {
-        rootUri = path.dirname(pl[i].uri);
-        newerFunction = pl[i].download.bind(pl[i]);
-        newerFunction(rootUri, cwd);
-        setInterval(newerFunction,pl[i].targetDuration * 500, rootUri, cwd);
+        updateFunction = pl[i].update.bind(pl[i]);
+        downloadFunction = pl[i].download.bind(pl[i]);
+        downloadFunction(rootUri, cwd);
+        setInterval(updateFunction, pl[i].targetDuration * 1000, rootUri);
+        setInterval(downloadFunction,pl[i].targetDuration * 500, rootUri, cwd);
       }
     }
   });
