@@ -1,41 +1,9 @@
+// Node modules
 var path = require('path');
 var fetch = require('fetch');
 var parse = require('./parse.js');
-var Decrypter = require('./decrypter.js');
 var async = require('async');
 var fs = require('fs');
-var mkdirp = require('mkdirp');
-
-
-function createManifestText (manifest, rootUri) {
-  return manifest.join('\n');
-}
-
-function getCWDName (parentUri, localUri) {
-  // Do I need to use node's URL object?
-  parentUri = parentUri.split('?')[0];
-  localUri = localUri.split('?')[0];
-
-  var parentPaths = path.dirname(parentUri).split('/');
-  var localPaths = path.dirname(localUri).split('/');
-
-  var lookFor = parentPaths.pop();
-  var i = localPaths.length;
-
-  while (i--) {
-    if (localPaths[i] === lookFor) {
-      break;
-    }
-  }
-
-  // No unique path-part found, use filename
-  if (i === localPaths.length - 1) {
-    return path.basename(localUri, path.extname(localUri));
-  }
-
-  return localPaths.slice(i + 1).join('_');
-}
-
 
 function getIt(options, done) {
   var uri = options.uri,
@@ -54,11 +22,11 @@ function getIt(options, done) {
       mediaPlaylists = masterPlaylist.medPlaylists,
       oldLength = mediaPlaylists.length,
       masterManifestLines = masterPlaylist.manLines,
+      playlistFilename = playlistFilename.split('?')[0],
       i;
-    playlistFilename = playlistFilename.split('?')[0];
 
     //save master playlist
-    fs.writeFileSync(path.resolve(cwd, playlistFilename), createManifestText(masterPlaylist.manLines, uri));
+    fs.writeFileSync(path.resolve(cwd, playlistFilename), masterPlaylist.manLines.join('\n'));
     // parse the mediaplaylists for segments and targetDuration
     for (i = 0; i < mediaPlaylists.length; i++) {
       parse.parseMediaPlaylist(masterPlaylist.medPlaylists[i], doneParsing, path.dirname(masterPlaylist.uri), cwd);
@@ -79,10 +47,8 @@ function getIt(options, done) {
         newFunction,
         newerFunction,
         i;
-
       // set update and download intervals
       for (i = 0; i < pl.length; i++) {
-
         rootUri = path.dirname(pl[i].uri);
         updateFunction = pl[i].update.bind(pl[i]);
         downloadFunction = pl[i].download.bind(pl[i]);
