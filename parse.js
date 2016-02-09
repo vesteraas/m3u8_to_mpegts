@@ -61,7 +61,7 @@ function parseEncryption(tagLine, manifestUri) {
   }
 }
 
-function parseMediaPlaylist(playlist, done, rootUri) {
+function parseMediaPlaylist(playlist, done, rootUri, cwd) {
   var manifestLines = [],
     segments = [];
 
@@ -80,12 +80,18 @@ function parseMediaPlaylist(playlist, done, rootUri) {
       } else if (currentLine.match(/^#EXTINF/)) {
         i++;
         if (i < lines.length) {
+          manifestLines.push(lines[i]);
           segments.push(parseResource(currentLine, lines[i], path.dirname(playlist.uri)));
         }
       } else if (currentLine.match(/^#EXT-X-TARGETDURATION:.+/i)) {
         playlist.targetDuration = parseInt(currentLine.split(':')[1]);
       }
     }
+    cwd =  cwd + '/' + playlist.bandwidth + '/';
+    mkdirp.sync(cwd);
+
+    //save media playlist manifest
+    fs.writeFileSync(path.resolve(cwd, 'playlist.m3u8'), manifestLines.join('\n'));
     playlist.segments = segments;
     playlist.manifestLines = manifestLines;
     playlist.download = download;
@@ -95,7 +101,7 @@ function parseMediaPlaylist(playlist, done, rootUri) {
 }
 
 //downloads the first segment encountered that hasn't already been downloaded.
-function download(rootUri, cwd) {
+function download(rootUri, cwd, bandwidth) {
   var i,
     seg,
     filename;
@@ -145,19 +151,21 @@ function download(rootUri, cwd) {
                 filename = filename.split('.')[0] + duplicateFileCount + '.' + filename.split('.')[1];
                 duplicateFileCount += 1;
               }
+              cwd = cwd + '/' + bandwidth + '/';
+
               return fs.writeFile(path.resolve(cwd, filename), new Buffer(data), function () { console.log("Finished fetching")});
             });
           });
         });
       } else {
-        return streamToDisk(seg, filename, cwd);
+        return streamToDisk(seg, filename, cwd, bandwidth);
       }
       return;
     }
   }
 }
 
-function streamToDisk (resource, filename, cwd) {
+function streamToDisk (resource, filename, cwd, bandwidth) {
   // Fetch it to CWD (streaming)
 
   var segmentStream = new fetch.FetchStream(resource.line),
@@ -177,7 +185,7 @@ function streamToDisk (resource, filename, cwd) {
     filename = "segment" + duplicateFileCount + ".ts";
     duplicateFileCount += 1;
   }
-
+  cwd = cwd + '/' + bandwidth + '/';
   outputStream = fs.createWriteStream(path.resolve(cwd, filename));
 
   segmentStream.pipe(outputStream);

@@ -13,11 +13,9 @@ function createManifestText (manifest, rootUri) {
 
 function getCWDName (parentUri, localUri) {
   // Do I need to use node's URL object?
-  console.log("hello");
   parentUri = parentUri.split('?')[0];
   localUri = localUri.split('?')[0];
-  console.log("parent uri: ", parentUri);
-  console.log("local uri: ", localUri);
+
   var parentPaths = path.dirname(parentUri).split('/');
   var localPaths = path.dirname(localUri).split('/');
 
@@ -63,7 +61,7 @@ function getIt(options, done) {
     fs.writeFileSync(path.resolve(cwd, playlistFilename), createManifestText(masterPlaylist.manLines, uri));
     // parse the mediaplaylists for segments and targetDuration
     for (i = 0; i < mediaPlaylists.length; i++) {
-      parse.parseMediaPlaylist(masterPlaylist.medPlaylists[i], doneParsing, path.dirname(masterPlaylist.uri));
+      parse.parseMediaPlaylist(masterPlaylist.medPlaylists[i], doneParsing, path.dirname(masterPlaylist.uri), cwd);
     }
     masterPlaylist.mediaPlaylists = [];
 
@@ -84,12 +82,13 @@ function getIt(options, done) {
 
       // set update and download intervals
       for (i = 0; i < pl.length; i++) {
+
         rootUri = path.dirname(pl[i].uri);
         updateFunction = pl[i].update.bind(pl[i]);
         downloadFunction = pl[i].download.bind(pl[i]);
-        downloadFunction(rootUri, cwd);
+        downloadFunction(rootUri, cwd, pl[i].bandwidth);
         setInterval(updateFunction, pl[i].targetDuration * 1000, rootUri);
-        setInterval(downloadFunction,pl[i].targetDuration * 500, rootUri, cwd);
+        setInterval(downloadFunction,pl[i].targetDuration * 500, rootUri, cwd, pl[i].bandwidth);
       }
     }
   });
