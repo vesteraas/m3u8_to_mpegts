@@ -4,13 +4,17 @@ var mkdirp = require('mkdirp');
 var fetch = require('fetch');
 var Decrypter = require('./decrypter.js');
 var fs = require('fs');
+// Constants
+var IV;
+var keyURI;
+var begunEncryption = false;
+var duplicateFileCount = 0;
 
 //downloads the first segment encountered that hasn't already been downloaded.
-function download(rootUri, cwd, bandwidth) {
+function download(rootUri, cwd, bandwidth, shutDown) {
   var i,
     seg,
     filename;
-
   for (i = 0; i < this.segments.length; i++) {
     seg = this.segments[i];
     if (!seg.downloaded) {
@@ -20,7 +24,7 @@ function download(rootUri, cwd, bandwidth) {
       }
       seg.downloaded = true;
       filename = path.basename(seg.line);
-      console.log('Start fetching', seg.line);
+      console.log('Start fetching');
       if (seg.encrypted) {
         // Fetch the key
         fetch.fetchUrl(seg.keyURI, function (err, meta, keyBody) {
@@ -36,7 +40,6 @@ function download(rootUri, cwd, bandwidth) {
             keyBody.readUInt32BE(12)
           ]);
           // Fetch segment data
-
           fetch.fetchUrl(seg.line, function (err, meta, segmentBody) {
             if (err) {
               return done(err);
@@ -48,17 +51,16 @@ function download(rootUri, cwd, bandwidth) {
             // Use key, iv, and segment data to decrypt segment into Uint8Array
             decryptedSegment = new Decrypter(segmentData, key_bytes, seg.IV, function (err, data) {
               // Save Uint8Array to disk
-              if (filename.match(/\?/)) {
+            cwd = cwd + '/' + 'bandwidth-' + bandwidth + '/';
+             if (filename.match(/\?/)) {
                 filename = filename.match(/^.+\..+\?/)[0];
                 filename = filename.substring(0, filename.length - 1);
               }
               if (fs.existsSync(path.resolve(cwd, filename))) {
-                filename = filename.split('.')[0] + duplicateFileCount + '.' + filename.split('.')[1];
-                duplicateFileCount += 1;
+                filename = filename.split('.')[0] + seg.mediaSequenceNumber + '.' + filename.split('.')[1];
               }
-              cwd = cwd + '/' + bandwidth + '/';
 
-              return fs.writeFile(path.resolve(cwd, filename), new Buffer(data), function () { console.log("Finished fetching")});
+              return fs.writeFile(path.resolve(cwd, filename), new Buffer(data), function () { console.log("Finished fetching");});
             });
           });
         });
@@ -66,6 +68,10 @@ function download(rootUri, cwd, bandwidth) {
         return streamToDisk(seg, filename, cwd, bandwidth);
       }
       return;
+    }
+    if (i === this.segments.length - 1 && this.endList) {
+      console.log('calling shutdown');
+      shutDown();
     }
   }
 }
@@ -82,6 +88,7 @@ function streamToDisk (resource, filename, cwd, bandwidth) {
     filename = filename.substring(0, filename.length - 1);
   }
 
+  cwd = cwd + '/' + 'bandwidth-'+ bandwidth + '/';
   if (fs.existsSync(path.resolve(cwd, filename))) {
     filename = filename.split('.')[0] + duplicateFileCount + '.' + filename.split('.')[1];
     duplicateFileCount += 1;
@@ -90,7 +97,6 @@ function streamToDisk (resource, filename, cwd, bandwidth) {
     filename = "segment" + duplicateFileCount + ".ts";
     duplicateFileCount += 1;
   }
-  cwd = cwd + '/' + bandwidth + '/';
   outputStream = fs.createWriteStream(path.resolve(cwd, filename));
 
   segmentStream.pipe(outputStream);
