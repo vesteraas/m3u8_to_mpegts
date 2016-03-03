@@ -12,54 +12,54 @@ function getIt(options, done) {
     playlistFilename = path.basename(uri.split('?')[0]);
   //start of the program, fetch master playlist
   fetch.fetchUrl(uri, function getPlaylist(err, meta, body) {
+    var mediaPlaylist,
+      oldLength,
+      masterPlaylist,
+      mediaPlaylists,
+      masterManifestLines,
+      i;
+
     if (err) {
       console.error('Error fetching url:', uri);
       return done(err);
     }
+    // Check for no master playlist
     if (body.toString().match(/#EXTINF/)) {
-      //we were given no master playlist
-
-      var mediaPlaylist = {
+      mediaPlaylist = {
         targetDuration:0,
         uri:options.uri,
         mostRecentSegmentUri:undefined,
         bandwidth:1000,
         segments:[]
-      },
+      };
       oldLength = 1;
       parse.parseMediaPlaylist(mediaPlaylist, doneParsing, path.dirname(options.uri), cwd);
     } else {
+      masterPlaylist = parse.parseMasterPlaylist(uri, body.toString());
+      mediaPlaylists = masterPlaylist.medPlaylists;
+      oldLength = mediaPlaylists.length;
+      masterManifestLines = masterPlaylist.manLines;
+      playlistFilename = playlistFilename.split('?')[0];
 
-    var masterPlaylist = parse.parseMasterPlaylist(uri, body.toString()),
-      mediaPlaylists = masterPlaylist.medPlaylists,
-      oldLength = mediaPlaylists.length,
-      masterManifestLines = masterPlaylist.manLines,
-      i;
-    playlistFilename = playlistFilename.split('?')[0];
-    //save master playlist
-    fs.writeFileSync(path.resolve(cwd, playlistFilename), masterPlaylist.manLines.join('\n'));
-    // parse the mediaplaylists for segments and targetDuration
-    for (i = 0; i < mediaPlaylists.length; i++) {
-      parse.parseMediaPlaylist(masterPlaylist.medPlaylists[i], doneParsing, path.dirname(masterPlaylist.uri), cwd);
-    }
-    masterPlaylist.mediaPlaylists = [];
-     var count = 0;
+      //save master playlist
+      fs.writeFileSync(path.resolve(cwd, playlistFilename), masterPlaylist.manLines.join('\n'));
+      // parse the mediaplaylists for segments and targetDuration
+      for (i = 0; i < mediaPlaylists.length; i++) {
+        parse.parseMediaPlaylist(masterPlaylist.medPlaylists[i], doneParsing, path.dirname(masterPlaylist.uri), cwd);
+      }
+      masterPlaylist.mediaPlaylists = [];
     }
     function doneParsing(playlist) {
-     console.log('done parsing');
       if (mediaPlaylist) {
-        console.log('seeting  up download of media playlist');
         setupDownload('media');
       } else {
         masterPlaylist.mediaPlaylists.push(playlist);
-
         // once we have gotten all of the data, setup downloading
         if(masterPlaylist.mediaPlaylists.length === oldLength) {
           setupDownload();
         }
       }
     }
-
 
     function setupDownload(type) {
       var pl,
@@ -69,11 +69,13 @@ function getIt(options, done) {
         updateInterval,
         downloadInterval,
         i;
+
       if (type === 'media') {
         pl = [mediaPlaylist];
       } else {
         pl = masterPlaylist.mediaPlaylists;
       }
+
       // set update and download intervals
       for (i = 0; i < pl.length; i++) {
         if (pl[i].targetDuration === 0) {
@@ -87,9 +89,8 @@ function getIt(options, done) {
           //Only set update if we haven't found an endlist
           updateInterval = setInterval(updateFunction, pl[i].targetDuration * 1000, rootUri);
         }
-        DownloadInterval = setInterval(downloadFunction,pl[i].targetDuration * 500, rootUri, cwd, pl[i].bandwidth, function() {console.log('shutting down');process.exit();});
+        downloadInterval = setInterval(downloadFunction,pl[i].targetDuration * 500, rootUri, cwd, pl[i].bandwidth, function() {console.log('shutting down');process.exit();});
       }
-
     }
   });
 }

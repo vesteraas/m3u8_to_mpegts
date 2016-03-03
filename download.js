@@ -18,7 +18,6 @@ function download(rootUri, cwd, bandwidth, shutDown) {
   for (i = 0; i < this.segments.length; i++) {
     seg = this.segments[i];
     if (!seg.downloaded) {
-
       if (!seg.line.match(/^https?:\/\//i)) {
         seg.line = rootUri + '/' + seg.line;
       }
@@ -50,27 +49,23 @@ function download(rootUri, cwd, bandwidth, shutDown) {
 
             // Use key, iv, and segment data to decrypt segment into Uint8Array
             decryptedSegment = new Decrypter(segmentData, key_bytes, seg.IV, function (err, data) {
-              // Save Uint8Array to disk
-            cwd = cwd + '/' + 'bandwidth-' + bandwidth + '/';
-             if (filename.match(/\?/)) {
+            // Save Uint8Array to disk
+              cwd = cwd + '/' + 'bandwidth-' + bandwidth + '/';
+              if (filename.match(/\?/)) {
                 filename = filename.match(/^.+\..+\?/)[0];
                 filename = filename.substring(0, filename.length - 1);
               }
               if (fs.existsSync(path.resolve(cwd, filename))) {
                 filename = filename.split('.')[0] + seg.mediaSequenceNumber + '.' + filename.split('.')[1];
               }
-
               return fs.writeFile(path.resolve(cwd, filename), new Buffer(data), function () { console.log("Finished fetching");});
             });
           });
         });
-      } else {
-        return streamToDisk(seg, filename, cwd, bandwidth);
       }
-      return;
+      return streamToDisk(seg, filename, cwd, bandwidth);
     }
     if (i === this.segments.length - 1 && this.endList) {
-      console.log('calling shutdown');
       shutDown();
     }
   }
@@ -78,7 +73,6 @@ function download(rootUri, cwd, bandwidth, shutDown) {
 
 function streamToDisk (resource, filename, cwd, bandwidth) {
   // Fetch it to CWD (streaming)
-
   var segmentStream = new fetch.FetchStream(resource.line),
     outputStream;
 
@@ -87,7 +81,6 @@ function streamToDisk (resource, filename, cwd, bandwidth) {
     filename = filename.match(/^.+\..+\?/)[0];
     filename = filename.substring(0, filename.length - 1);
   }
-
   cwd = cwd + '/' + 'bandwidth-'+ bandwidth + '/';
   if (fs.existsSync(path.resolve(cwd, filename))) {
     filename = filename.split('.')[0] + duplicateFileCount + '.' + filename.split('.')[1];
@@ -98,14 +91,12 @@ function streamToDisk (resource, filename, cwd, bandwidth) {
     duplicateFileCount += 1;
   }
   outputStream = fs.createWriteStream(path.resolve(cwd, filename));
-
   segmentStream.pipe(outputStream);
 
   segmentStream.on('error', function (err) {
     console.error('Fetching of url:', resource.line);
     //return done(err);
   });
-
   segmentStream.on('end', function () {
     console.log('Finished fetching', resource.line);
     //return done();
