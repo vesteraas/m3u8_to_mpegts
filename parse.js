@@ -6,13 +6,6 @@ var fetch = require('fetch');
 var Decrypter = require('./decrypter.js');
 var Download = require('./download.js');
 
-// Constants
-var IV;
-var keyURI;
-var begunEncryption = false;
-var duplicateFileCount = 0;
-var mediaSequence = 0;
-
 function parseMasterPlaylist (manifestUri, manifestData) {
   var manifestLines = [],
     mediaPlaylists = [],
@@ -36,7 +29,12 @@ function parseMasterPlaylist (manifestUri, manifestData) {
         uri:lines[i],
         mostRecentSegmentUri:undefined,
         bandwidth:parseInt(currentLine.match(/BANDWIDTH=\d+/i)[0].split('=')[1]),
-        segments: []
+        segments: [],
+        IV: undefined,
+        keyURI: undefined,
+        begunEncryption:false,
+        duplicateFileCount:0,
+        mediaSequence:0
       }
 
       //make our url absolute if we have to
@@ -52,15 +50,16 @@ function parseMasterPlaylist (manifestUri, manifestData) {
   };
 }
 
-function parseEncryption(tagLine, manifestUri) {
+function parseEncryption(tagLine, manifestUri, playlist) {
   if (tagLine.match(/^#EXT-X-KEY/i) && tagLine.match(/AES/)) {
+    console.log(tagLine);
     console.log("began encryption");
-    begunEncryption = true;
-    keyURI = tagLine.split(',')[1];
-    keyURI = keyURI.substring(5, keyURI.length - 1);
-    IV = tagLine.split(',')[2];
-    if (IV !== undefined && IV !== null) {
-      IV = IV.substring(3);
+    playlist.begunEncryption = true;
+    playlist.keyURI = tagLine.split(',')[1];
+    playlist.keyURI = playlist.keyURI.substring(5, playlist.keyURI.length - 1);
+    playlist.IV = tagLine.split(',')[2];
+    if (playlist.IV !== undefined && playlist.IV !== null) {
+      playlist.IV = playlist.IV.substring(3);
     }
   }
 }
@@ -68,10 +67,9 @@ function parseEncryption(tagLine, manifestUri) {
 function parseMediaPlaylist(playlist, done, rootUri, cwd) {
 
   var manifestLines = [],
-    segments = [];
+    segments = [],
+    mediaSequence = 0;
 
-  // Split into lines
-  var mediaSequence = 0;
   fetch.fetchUrl(playlist.uri, function (err, meta, body) {
     var lines = body.toString().split('\n'),
     i,
@@ -82,18 +80,20 @@ function parseMediaPlaylist(playlist, done, rootUri, cwd) {
       currentLine = lines[i];
       manifestLines.push(currentLine);
       if (currentLine.match(/^#EXT-X-KEY/i)) {
-        parseEncryption(currentLine, rootUri);
+        parseEncryption(currentLine, rootUri, playlist);
       } else if (currentLine.match(/^#EXTINF/)) {
         i++;
         if (i < lines.length) {
           manifestLines.push(lines[i]);
-          segments.push(parseResource(currentLine, lines[i], path.dirname(playlist.uri), mediaSequence));
+          segments.push(parseResource(currentLine, lines[i], path.dirname(playlist.uri), mediaSequence, playlist));
           mediaSequence += 1;
         }
       } else if (currentLine.match(/^#EXT-X-TARGETDURATION:.+/i)) {
         playlist.targetDuration = parseInt(currentLine.split(':')[1]);
       } else if (currentLine.match(/^#EXT-X-ENDLIST/)) {
         playlist.endList = mediaSequence;
+      } else if (currentLine.match(/^#EXT-X-MEDIA-SEQUENCE/)) {
+        mediaSequence = parseInt(currentLine.split(':')[1], 10);
       }
     }
     cwd =  cwd + '/' + 'bandwidth-' + playlist.bandwidth + '/';
@@ -129,12 +129,12 @@ function update(rootUri) {
     for (i = 0; i < newPlaylistLines.length; i++) {
       currentLine = newPlaylistLines[i];
       if (currentLine.match(/^#EXT-X-KEY/i)) {
-        parseEncryption(currentLine, rootUri);
+        parseEncryption(currentLine, rootUri, this);
       }
       else if (newPlaylistLines[i].match(/^#EXTINF/)) {
         i++;
         if (i < newPlaylistLines.length) {
-          resource = parseResource(0, currentLine, newPlaylistLines[i], rootUri);
+          resource = parseResource(0, currentLine, newPlaylistLines[i], rootUri, playlist);
           //if we have already passed the difference in the manifest, start adding
           if (!resource.line.match(/^https?:\/\//i)) {
             resource.line = rootUri + '/' + resource.line;
@@ -155,7 +155,7 @@ function update(rootUri) {
   });
 }
 
-function parseResource(tagLine, resourceLine, manifestUri, mediaSequence) {
+function parseResource(tagLine, resourceLine, manifestUri, mediaSequence, playlist) {
   var resource = {
     type: 'segment',
     line: resourceLine,
@@ -166,10 +166,10 @@ function parseResource(tagLine, resourceLine, manifestUri, mediaSequence) {
     mediaSequenceNumber: mediaSequence
   };
   mediaSequence += 1;
-  if (begunEncryption) {
+  if (playlist.begunEncryption) {
     resource.encrypted = true;
-    resource.keyURI = keyURI;
-    resource.IV = IV;
+    resource.keyURI = playlist.keyURI;
+    resource.IV = playlist.IV;
     // make our uri absolute if we need to
     if (!resource.keyURI.match(/^https?:\/\//i)) {
       resource.keyURI = manifestUri + '/' + resource.keyURI;
