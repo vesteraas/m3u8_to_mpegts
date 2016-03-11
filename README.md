@@ -5,16 +5,17 @@ A simple CLI tool to fetch an entire hls manifest and it's segments and save it 
 ## Installation
 
 ``` 
-Download this repo, and run the example using node.
+npm install m3u8_to_mpegts
 ```
 
 ### Usage
+Then on your main file you run this
 
 **Example**
     
-    var HlsFetcher = require('live-hls-fetcher');
+    var tsFetcher = require('m3u8_to_mpegts');
 
-	HlsFetcher({
+	tsFetcher({
 		    uri: "http://api.new.livestream.com/accounts/15210385/events/4353996/videos/113444715.m3u8",
 		    cwd: "destinationDirectory",
 		    preferLowQuality: true,
@@ -25,12 +26,12 @@ Download this repo, and run the example using node.
 	);
 
 
-w
+
 Special thanks to:
 
  [Tenacex](https://github.com/tenacex) for making it live
 
 and 
 
-[imbcmdth](https://github.com/imbcmdth) for breathing life into this 
+[imbcmdth](https://github.com/imbcmdth) for creating hls-fetcher.
 
