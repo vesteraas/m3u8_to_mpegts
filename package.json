@@ -16,7 +16,7 @@
     "url": "git+https://github.com/SudoPlz/m3u8_to_mpegts.git"
   },
   "keywords": [
-    "m3u8"
+    "m3u8", "ts", "hls", "m3u8_to_mpegts", "converter"
   ],
   "author": "Ioannis Kokkinidis <sudoplz@gmail.com>",
   "contributors": [
@@ -32,9 +32,7 @@
     "async": "^1.5.0",
     "fetch": "^0.3.6",
     "mkdirp": "^0.5.1",
-    "pessimist": "^0.3.5",
     "pkcs7": "^0.2.3",
-    "keypress": "^0.0.1"
   },
   "homepage": "https://github.com/SudoPlz/m3u8_to_mpegts#readme"
 }

@@ -3,15 +3,10 @@ var path = require('path');
 var fetch = require('fetch');
 var parse = require('./parse.js');
 var fs = require('fs');
-var readline = require('readline');
-var keypress = require('keypress');
 
 
 function getIt(options, done) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
+  
 
   var uri = options.uri,
     cwd = options.cwd,
