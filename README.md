@@ -23,3 +23,14 @@ Download this repo, and run the example using node.
     	   console.log("Download of chunk files complete");
 	   }
 	);
+
+
+
+Special thanks to:
+
+ [Tenacex](https://github.com/tenacex) for making it live
+
+and 
+
+[imbcmdth](https://github.com/imbcmdth) for breathing life into this 
+
