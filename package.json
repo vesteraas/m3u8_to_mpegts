@@ -1,12 +1,9 @@
 {
   "name": "m3u8_to_mpegts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A small library that allows the user to download mpeg-ts chunk files after he provides it with a m3u8 playlist url file, and an output directory.",
   "main": "index.js",
-  "dependencies": {
-    "keypress": "^0.2.1",
-    "readline": "^1.3.0"
-  },
+  "homepage": "https://github.com/SudoPlz/m3u8_to_mpegts#readme",
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -32,9 +29,6 @@
     "async": "^1.5.0",
     "fetch": "^0.3.6",
     "mkdirp": "^0.5.1",
-    "pkcs7": "^0.2.3",
-  },
-  "homepage": "https://github.com/SudoPlz/m3u8_to_mpegts#readme"
+    "pkcs7": "^0.2.3"
+  }
 }
-
-
