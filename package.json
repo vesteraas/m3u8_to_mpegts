@@ -1,27 +1,33 @@
 {
-  "name": "live-hls-fetcher",
-  "version": "1.0.1",
-  "description": "Fetch HLS segments from an m3u8 playlist",
+  "name": "m3u8_to_mpegts",
+  "version": "1.0.0",
+  "description": "A small library that allows the user to download mpeg-ts chunk files after he provides it with a m3u8 playlist url file, and an output directory.",
   "main": "index.js",
+  "dependencies": {
+    "keypress": "^0.2.1",
+    "readline": "^1.3.0"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "bin": {
-    "live-hls-fetcher": "./bin/cli.js"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/imbcmdth/hls-fetcher.git"
+    "url": "git+https://github.com/SudoPlz/m3u8_to_mpegts.git"
   },
+  "keywords": [
+    "m3u8"
+  ],
+  "author": "Ioannis Kokkinidis <sudoplz@gmail.com>",
   "contributors": [
+    "Dylan Dove (http://www.dylandove.com)",
     "Jon-Carlos Rivera <jon.carlos.rivera@gmail.com> (http://jon-carlos.com/)",
     "Brandon Casey <brandonocasey@gmail.com> (https://github.com/brandonocasey)"
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/imbcmdth/hls-fetcher/issues"
+    "url": "https://github.com/SudoPlz/m3u8_to_mpegts/issues"
   },
-  "homepage": "https://github.com/imbcmdth/hls-fetcher#readme",
   "dependencies": {
     "async": "^1.5.0",
     "fetch": "^0.3.6",
@@ -30,4 +36,7 @@
     "pkcs7": "^0.2.3",
     "keypress": "^0.0.1"
   }
+  "homepage": "https://github.com/SudoPlz/m3u8_to_mpegts#readme"
 }
+
+
