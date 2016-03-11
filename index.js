@@ -59,23 +59,23 @@ function getIt(options, done) {
 
     function doneParsing(playlist) {
 
-      function redrawScreen() {
-        process.stdout.write('\033[2J');
-        process.stdout.write('\rSelect Rendition(s):\n\n');
-        for (var i = 0; i < lines.length; i++) {
-          if (currentLine == i) {
-            rl.write('-->   ');
-          } else {
-            rl.write('      ');
-          }
-          if (selected[i] == 1) {
-            rl.write('*');
-          } else {
-            rl.write(' ');
-          }
-          rl.write(lines[i] + '\n')
-        }
-      }
+      // function redrawScreen() {
+      //   process.stdout.write('\033[2J');
+      //   process.stdout.write('\rSelect Rendition(s):\n\n');
+      //   for (var i = 0; i < lines.length; i++) {
+      //     if (currentLine == i) {
+      //       rl.write('-->   ');
+      //     } else {
+      //       rl.write('      ');
+      //     }
+      //     if (selected[i] == 1) {
+      //       rl.write('*');
+      //     } else {
+      //       rl.write(' ');
+      //     }
+      //     rl.write(lines[i] + '\n')
+      //   }
+      // }
 
       if (mediaPlaylist) {
         setupDownload('media');
@@ -83,68 +83,79 @@ function getIt(options, done) {
         masterPlaylist.mediaPlaylists.push(playlist);
         // once we have gotten all of the data, setup downloading
         if(masterPlaylist.mediaPlaylists.length === oldLength) {
-          var playlists = [];
+
+          var lowQualityIt = 0, highQualityIt = 0;
           for (var i = 0; i < masterPlaylist.mediaPlaylists.length; i++) {
-            playlists.push('Bandwidth: ' + masterPlaylist.mediaPlaylists[i].bandwidth);
-          }
-
-          var lines = ['All'];
-          var currentLine = 0; //starts at all
-          var selected = [0];
-          for (var i = 0; i < playlists.length; i++) {
-            selected.push(0);
-          }
-
-          for (var i = 0; i < playlists.length; i++) {
-            lines.push(playlists[i]);
-          }
-          lines.push('Download Selected');
-
-          process.stdout.write('\033[2J');
-          process.stdout.write('\rSelect Rendition(s):\n\n');
-          for (var i = 0; i < lines.length; i++) {
-            if (i == 0) {
-              rl.write('-->    ' + lines[i] + '\n');
-            } else {
-              rl.write('       ' + lines[i] + '\n');
+            // console.log('Bandwidth: ' + masterPlaylist.mediaPlaylists[i].bandwidth);
+            var curPlaylistBandwith = masterPlaylist.mediaPlaylists[i].bandwidth;
+            if(curPlaylistBandwith < masterPlaylist.mediaPlaylists[lowQualityIt].bandwidth){
+              lowQualityIt = i;
+            }
+            if(curPlaylistBandwith > masterPlaylist.mediaPlaylists[highQualityIt].bandwidth){
+              highQualityIt = i;
             }
           }
+          console.log("High quality bandwith: "+masterPlaylist.mediaPlaylists[highQualityIt].bandwidth+", low quality bandwith: "+masterPlaylist.mediaPlaylists[lowQualityIt].bandwidth);
+          var sel = lowQualityIt;
+          masterPlaylist.mediaPlaylists = [masterPlaylist.mediaPlaylists[sel]];
+          setupDownload();
+          // var lines = ['All'];
+          // var currentLine = 0; //starts at all
+          // var selected = [0];
+          // for (var i = 0; i < playlists.length; i++) {
+          //   selected.push(0);
+          // }
 
-          process.stdin.on('keypress', function (ch, key) {
-            if (key && key.name == 'return') {
-              if (currentLine == 0) {
-                process.stdout.write('\033[2J');
-                setupDownload();
-              } else if (selected[currentLine] == 0) {
-                selected[currentLine] = 1;
-              } else if (selected[currentLine] == 1) {
-                selected[currentLine] = 0;
-              } else if (currentLine == playlists.length + 1) {
-                //remove playlists
-                selected.shift();
-                var tempPlaylist = [];
-                for (var i = 0; i < selected.length; i++) {
-                  if (selected[i] == 1) {
-                    tempPlaylist.push(masterPlaylist.mediaPlaylists[i]);
-                  }
-                }
-                masterPlaylist.mediaPlaylists = tempPlaylist;
-                setupDownload();
-                return;
+          // for (var i = 0; i < playlists.length; i++) {
+          //   lines.push(playlists[i]);
+          // }
+          // lines.push('Download Selected');
 
-              }
-            }
-            if (key && key.name == 'up') {
-              if (currentLine !== 0) {
-                currentLine--;
-              }
-            } else if (key && key.name == 'down') {
-              if (currentLine !== playlists.length + 1) {
-                currentLine++;
-              }
-            }
-            redrawScreen();
-          });
+          // process.stdout.write('\033[2J');
+          // process.stdout.write('\rSelect Rendition(s):\n\n');
+          // for (var i = 0; i < lines.length; i++) {
+          //   if (i == 0) {
+          //     rl.write('-->    ' + lines[i] + '\n');
+          //   } else {
+          //     rl.write('       ' + lines[i] + '\n');
+          //   }
+          // }
+
+          // process.stdin.on('keypress', function (ch, key) {
+          //   if (key && key.name == 'return') {
+          //     if (currentLine == 0) {
+          //       process.stdout.write('\033[2J');
+          //       setupDownload();
+          //     } else if (selected[currentLine] == 0) {
+          //       selected[currentLine] = 1;
+          //     } else if (selected[currentLine] == 1) {
+          //       selected[currentLine] = 0;
+          //     } else if (currentLine == playlists.length + 1) {
+          //       //remove playlists
+          //       selected.shift();
+          //       var tempPlaylist = [];
+          //       for (var i = 0; i < selected.length; i++) {
+          //         if (selected[i] == 1) {
+          //           tempPlaylist.push(masterPlaylist.mediaPlaylists[i]);
+          //         }
+          //       }
+          //       masterPlaylist.mediaPlaylists = tempPlaylist;
+          //       setupDownload();
+          //       return;
+
+          //     }
+          //   }
+          //   if (key && key.name == 'up') {
+          //     if (currentLine !== 0) {
+          //       currentLine--;
+          //     }
+          //   } else if (key && key.name == 'down') {
+          //     if (currentLine !== playlists.length + 1) {
+          //       currentLine++;
+          //     }
+          //   }
+          //   redrawScreen();
+          // });
         }
       }
     }
