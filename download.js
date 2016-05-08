@@ -12,7 +12,7 @@ var begunEncryption = false;
 var duplicateFileCount = 0;
 
 //downloads the first segment encountered that hasn't already been downloaded.
-function download(rootUri, cwd, bandwidth, shutDown, finishedDownloadingSegment, done) {
+function download(rootUri, cwd, bandwidth, shutDown, finishedDownloadingSegment, done, files) {
   var i,
     seg,
     filename,
@@ -73,7 +73,7 @@ function download(rootUri, cwd, bandwidth, shutDown, finishedDownloadingSegment,
           });
         });
       } else {
-        return streamToDisk(seg, filename, cwd, bandwidth, finishedDownloadingSegment, playlist, done);
+        return streamToDisk(seg, filename, cwd, bandwidth, finishedDownloadingSegment, playlist, done, files);
       }
       return;
     }
@@ -83,7 +83,7 @@ function download(rootUri, cwd, bandwidth, shutDown, finishedDownloadingSegment,
   }
 }
 
-function streamToDisk (resource, filename, cwd, bandwidth, finishedDownloadingSegment, playlist, done) {
+function streamToDisk (resource, filename, cwd, bandwidth, finishedDownloadingSegment, playlist, done, files) {
   // Fetch it to CWD (streaming)
   var segmentStream = new fetch.FetchStream(resource.line),
     outputStream;
@@ -109,6 +109,8 @@ function streamToDisk (resource, filename, cwd, bandwidth, finishedDownloadingSe
     //return done(err);
   });
   segmentStream.on('end', function () {
+    files.push(path.join(cwd, filename));
+
     console.log('Finished fetching', resource.line);
     console.log(finishedDownloadingSegment);
     finishedDownloadingSegment(playlist, done);

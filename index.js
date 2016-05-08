@@ -6,7 +6,7 @@ var fs = require('fs');
 
 
 function getIt(options, done) {
-  
+  var files = [];
 
   var uri = options.uri,
     cwd = options.cwd,
@@ -86,13 +86,13 @@ function getIt(options, done) {
       playlist.download(path.dirname(playlist.uri), cwd, playlist.bandwidth, function() {
         playlistsFinished++;
         if (mediaPlaylist) {
-          done(null);
+          done(null, files);
         } else if (playlistsFinished == masterPlaylist.mediaPlaylists.length) {
-          done(null);
+          done(null, files);
         }
-        }, finishedDownloadingSegment, done);
+        }, finishedDownloadingSegment, done, files);
 
-
+  
     }
 
     function setupDownload(type) {
@@ -118,7 +118,7 @@ function getIt(options, done) {
         rootUri = path.dirname(pl[i].uri);
         updateFunction = pl[i].update.bind(pl[i]);
         downloadFunction = pl[i].download.bind(pl[i]);
-        downloadFunction(rootUri, cwd, pl[i].bandwidth, function() {console.log('shutting down');process.exit();}, finishedDownloadingSegment, done);
+        downloadFunction(rootUri, cwd, pl[i].bandwidth, function() {console.log('shutting down');process.exit();}, finishedDownloadingSegment, done, files);
         if (!pl[i].endList) {
           //Only set update if we haven't found an endlist
           updateInterval = setInterval(updateFunction, pl[i].targetDuration * 1000, rootUri);
