@@ -82,18 +82,15 @@ function getIt(options, done) {
       }
     }
     var playlistsFinished = 0;
-    function finishedDownloadingSegment(playlist) {
+    function finishedDownloadingSegment(playlist, done) {
       playlist.download(path.dirname(playlist.uri), cwd, playlist.bandwidth, function() {
         playlistsFinished++;
-        console.log('playlists finished: ', playlistsFinished);
         if (mediaPlaylist) {
-          console.log('shutting down');
-          process.exit();
+          done(null);
         } else if (playlistsFinished == masterPlaylist.mediaPlaylists.length) {
-          console.log('shutting down');
-          process.exit();
+          done(null);
         }
-        }, finishedDownloadingSegment);
+        }, finishedDownloadingSegment, done);
 
 
     }
@@ -121,7 +118,7 @@ function getIt(options, done) {
         rootUri = path.dirname(pl[i].uri);
         updateFunction = pl[i].update.bind(pl[i]);
         downloadFunction = pl[i].download.bind(pl[i]);
-        downloadFunction(rootUri, cwd, pl[i].bandwidth, function() {console.log('shutting down');process.exit();}, finishedDownloadingSegment);
+        downloadFunction(rootUri, cwd, pl[i].bandwidth, function() {console.log('shutting down');process.exit();}, finishedDownloadingSegment, done);
         if (!pl[i].endList) {
           //Only set update if we haven't found an endlist
           updateInterval = setInterval(updateFunction, pl[i].targetDuration * 1000, rootUri);

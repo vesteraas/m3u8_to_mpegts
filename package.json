@@ -1,34 +1,104 @@
 {
-  "name": "m3u8_to_mpegts",
-  "version": "1.0.1",
-  "description": "A small library that allows the user to download mpeg-ts chunk files after he provides it with a m3u8 playlist url file, and an output directory.",
-  "main": "index.js",
-  "homepage": "https://github.com/SudoPlz/m3u8_to_mpegts#readme",
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SudoPlz/m3u8_to_mpegts.git"
-  },
-  "keywords": [
-    "m3u8", "ts", "hls", "m3u8_to_mpegts", "converter"
+  "_args": [
+    [
+      "m3u8_to_mpegts@^1.0.1",
+      "/Users/werner/Work/nb/audio_scraper"
+    ]
   ],
-  "author": "Ioannis Kokkinidis <sudoplz@gmail.com>",
-  "contributors": [
-    "Dylan Dove (http://www.dylandove.com)",
-    "Jon-Carlos Rivera <jon.carlos.rivera@gmail.com> (http://jon-carlos.com/)",
-    "Brandon Casey <brandonocasey@gmail.com> (https://github.com/brandonocasey)"
+  "_from": "m3u8_to_mpegts@>=1.0.1 <2.0.0",
+  "_id": "m3u8_to_mpegts@1.0.1",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/m3u8_to_mpegts",
+  "_nodeVersion": "0.12.7",
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/m3u8_to_mpegts-1.0.1.tgz_1457663076140_0.6444466239772737"
+  },
+  "_npmUser": {
+    "email": "sudoplz@gmail.com",
+    "name": "sudoplz"
+  },
+  "_npmVersion": "3.3.5",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "m3u8_to_mpegts",
+    "raw": "m3u8_to_mpegts@^1.0.1",
+    "rawSpec": "^1.0.1",
+    "scope": null,
+    "spec": ">=1.0.1 <2.0.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/"
   ],
-  "license": "MIT",
+  "_resolved": "https://registry.npmjs.org/m3u8_to_mpegts/-/m3u8_to_mpegts-1.0.1.tgz",
+  "_shasum": "0fc37e736fd949e85585cf1d97796d42b2d35821",
+  "_shrinkwrap": null,
+  "_spec": "m3u8_to_mpegts@^1.0.1",
+  "_where": "/Users/werner/Work/nb/audio_scraper",
+  "author": {
+    "email": "sudoplz@gmail.com",
+    "name": "Ioannis Kokkinidis"
+  },
   "bugs": {
     "url": "https://github.com/SudoPlz/m3u8_to_mpegts/issues"
   },
+  "contributors": [
+    {
+      "name": "Dylan Dove",
+      "url": "http://www.dylandove.com"
+    },
+    {
+      "email": "jon.carlos.rivera@gmail.com",
+      "name": "Jon-Carlos Rivera",
+      "url": "http://jon-carlos.com/"
+    },
+    {
+      "email": "brandonocasey@gmail.com",
+      "name": "Brandon Casey",
+      "url": "https://github.com/brandonocasey"
+    }
+  ],
   "dependencies": {
     "async": "^1.5.0",
     "fetch": "^0.3.6",
     "mkdirp": "^0.5.1",
     "pkcs7": "^0.2.3"
-  }
+  },
+  "description": "A small library that allows the user to download mpeg-ts chunk files after he provides it with a m3u8 playlist url file, and an output directory.",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "0fc37e736fd949e85585cf1d97796d42b2d35821",
+    "tarball": "https://registry.npmjs.org/m3u8_to_mpegts/-/m3u8_to_mpegts-1.0.1.tgz"
+  },
+  "gitHead": "683917e5f0ed0d05778a03cb658c4fbad8677377",
+  "homepage": "https://github.com/SudoPlz/m3u8_to_mpegts#readme",
+  "keywords": [
+    "m3u8",
+    "ts",
+    "hls",
+    "m3u8_to_mpegts",
+    "converter"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "email": "sudoplz@gmail.com",
+      "name": "sudoplz"
+    }
+  ],
+  "name": "m3u8_to_mpegts",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SudoPlz/m3u8_to_mpegts.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.1"
 }
